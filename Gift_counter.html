@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>禮物兌換處選址問題 - 互動教學</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 20px;
+        }
+        
+        .main-content {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .canvas-container {
+            flex: 1;
+            min-width: 600px;
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .sidebar {
+            width: 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .panel h3 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        
+        .booth-list {
+            list-style: none;
+        }
+        
+        .booth-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .booth-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .booth-name {
+            font-weight: bold;
+        }
+        
+        .booth-coord {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .booth-distance {
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        .position-display {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .position-display strong {
+            color: #667eea;
+            font-size: 1.2em;
+        }
+        
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-secondary.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-animation {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+        
+        .btn-animation:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(240, 147, 251, 0.4);
+        }
+        
+        .model-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .model-btn {
+            flex: 1;
+            min-width: 80px;
+            padding: 10px;
+            font-size: 0.85em;
+        }
+        
+        .optimal-info {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+            display: none;
+        }
+        
+        .optimal-info.show {
+            display: block;
+        }
+        
+        .optimal-info p {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+        
+        .optimal-info strong {
+            color: #27ae60;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+        }
+        
+        .instructions {
+            font-size: 0.9em;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        .instructions strong {
+            color: #667eea;
+        }
+        
+        canvas {
+            display: block;
+            cursor: crosshair;
+        }
+        
+        .animation-controls {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3e0;
+            border-radius: 8px;
+            border-left: 4px solid #ff9800;
+        }
+        
+        .animation-controls p {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .slider-container label {
+            font-size: 0.85em;
+            color: #333;
+        }
+        
+        input[type="range"] {
+            flex: 1;
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .canvas-container {
+                min-width: auto;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏫 禮物兌換處選址問題</h1>
+        <p class="subtitle">數學建模活動 - 互動教學工具</p>
+        
+        <div class="main-content">
+            <div class="canvas-container">
+                <canvas id="court" width="560" height="300"></canvas>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #e74c3c;"></div>
+                        <span>遊戲攤位</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #3498db;"></div>
+                        <span>兌換處 P</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #27ae60;"></div>
+                        <span>最佳位置</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <div class="panel">
+                    <h3>📍 攤位位置</h3>
+                    <ul class="booth-list">
+                        <li>
+                            <span><span class="booth-name">A</span> <span class="booth-coord">(11, 14)</span></span>
+                            <span class="booth-distance" id="distA">-- m</span>
+                        </li>
+                        <li>
+                            <span><span class="booth-name">B</span> <span class="booth-coord">(8, 0)</span></span>
+                            <span class="booth-distance" id="distB">-- m</span>
+                        </li>
+                        <li>
+                            <span><span class="booth-name">C</span> <span class="booth-coord">(14, 0)</span></span>
+                            <span class="booth-distance" id="distC">-- m</span>
+                        </li>
+                        <li>
+                            <span><span class="booth-name">D</span> <span class="booth-coord">(20, 0)</span></span>
+                            <span class="booth-distance" id="distD">-- m</span>
+                        </li>
+                        <li>
+                            <span><span class="booth-name">E</span> <span class="booth-coord">(17, 14)</span></span>
+                            <span class="booth-distance" id="distE">-- m</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="panel">
+                    <h3>🎯 兌換處位置 P</h3>
+                    <div class="position-display">
+                        座標：<strong id="positionP">(14, 7)</strong>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-label">總距離</div>
+                            <div class="stat-value" id="totalDist">-- m</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-label">最遠距離</div>
+                            <div class="stat-value" id="maxDist">-- m</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h3>⭐ 顯示最佳位置</h3>
+                    <div class="model-buttons">
+                        <button class="btn btn-secondary model-btn" onclick="showOptimal(1)">模型一<br><small>總距離最小</small></button>
+                        <button class="btn btn-secondary model-btn" onclick="showOptimal(2)">模型二<br><small>最遠最小</small></button>
+                        <button class="btn btn-secondary model-btn" onclick="showOptimal(3)">模型三<br><small>幾何中心</small></button>
+                    </div>
+                    <div class="optimal-info" id="optimalInfo">
+                        <p><strong>最佳位置座標：</strong></p>
+                        <p id="optimalCoord" style="font-size: 1.1em; color: #27ae60; font-weight: bold;"></p>
+                        <p id="optimalDist"></p>
+                    </div>
+                    <button class="btn btn-secondary" style="width: 100%; margin-top: 10px;" onclick="hideOptimal()">隱藏最佳位置</button>
+                </div>
+                
+                <div class="panel">
+                    <h3>🎬 自動探索</h3>
+                    <p class="instructions">點擊下方按鈕，系統會自動移動 P，讓你觀察總距離的變化：</p>
+                    <div class="btn-group" style="margin-top: 10px;">
+                        <button class="btn btn-animation" id="animBtn" onclick="toggleAnimation()">▶ 開始自動移動</button>
+                    </div>
+                    <div class="animation-controls">
+                        <p>觀察：當 P 移動時，總距離如何變化？</p>
+                        <div class="slider-container">
+                            <label>移動速度：</label>
+                            <input type="range" id="speedSlider" min="1" max="10" value="5">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <h3>📖 使用說明</h3>
+                    <p class="instructions">
+                        <strong>點擊</strong>籃球場上任一位置，選擇兌換處 P 的座標。<br><br>
+                        程式會即時計算 P 到各攤位的距離，以及總距離和最遠距離。<br><br>
+                        嘗試找出你認為「最好」的位置！
+                    </p>
+                </div>
+                
+                <div class="panel">
+                    <h3>🎮 挑戰模式</h3>
+                    <button class="btn btn-primary" style="width: 100%;" onclick="startChallenge()">開始挑戰</button>
+                    <p id="challengeText" class="instructions" style="margin-top: 10px; text-align: center;"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 攤位數據
+        const booths = [
+            { name: 'A', x: 11, y: 14, game: '投籃遊戲' },
+            { name: 'B', x: 8, y: 0, game: '射箭遊戲' },
+            { name: 'C', x: 14, y: 0, game: '套圈遊戲' },
+            { name: 'D', x: 20, y: 0, game: '猜謎遊戲' },
+            { name: 'E', x: 17, y: 14, game: '射球遊戲' }
+        ];
+        
+        // 球場尺寸（米）
+        const courtWidth = 28;
+        const courtHeight = 15;
+        
+        // Canvas 設定
+        const canvas = document.getElementById('court');
+        const ctx = canvas.getContext('2d');
+        const padding = 40;
+        const scaleX = (canvas.width - 2 * padding) / courtWidth;
+        const scaleY = (canvas.height - 2 * padding) / courtHeight;
+        
+        // 當前兌換處位置
+        let currentP = { x: 14, y: 7 };
+        
+        // 最佳位置
+        let optimalPositions = {
+            model1: { x: 14, y: 5.6, label: '模型一：總距離最小', totalDist: 39.86, maxDist: 8.92 },
+            model2: { x: 14, y: 6.0, label: '模型二：最遠距離最小', totalDist: 40.06, maxDist: 8.54 },
+            model3: { x: 14, y: 5.6, label: '模型三：幾何中心', totalDist: 39.86, maxDist: 8.92 }
+        };
+        
+        // 當前顯示的最佳位置
+        let showOptimalPos = null;
+        
+        // 挑戰模式
+        let challengeMode = false;
+        let targetTotalDist = 39.86;
+        
+        // 動畫狀態
+        let animationRunning = false;
+        let animationId = null;
+        let animationAngle = 0;
+        
+        // 座標轉換
+        function toCanvasX(x) {
+            return padding + x * scaleX;
+        }
+        
+        function toCanvasY(y) {
+            return canvas.height - padding - y * scaleY;
+        }
+        
+        function toCourtX(canvasX) {
+            return Math.round((canvasX - padding) / scaleX * 10) / 10;
+        }
+        
+        function toCourtY(canvasY) {
+            return Math.round((canvas.height - padding - canvasY) / scaleY * 10) / 10;
+        }
+        
+        // 距離計算
+        function distance(p1, p2) {
+            return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+        }
+        
+        // 繪製籃球場背景
+        function drawBasketballCourt() {
+            // 球場背景 - 木地板顏色
+            ctx.fillStyle = '#c4a35a';
+            ctx.fillRect(padding, padding, canvas.width - 2 * padding, canvas.height - 2 * padding);
+            
+            // 木地板紋理
+            ctx.strokeStyle = '#b8956e';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < 20; i++) {
+                ctx.beginPath();
+                ctx.moveTo(padding + i * (canvas.width - 2 * padding) / 20, padding);
+                ctx.lineTo(padding + i * (canvas.width - 2 * padding) / 20, canvas.height - padding);
+                ctx.stroke();
+            }
+            
+            // 球場邊界線
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(padding, padding, canvas.width - 2 * padding, canvas.height - 2 * padding);
+            
+            // 中線
+            ctx.beginPath();
+            ctx.moveTo(padding + courtWidth / 2 * scaleX, padding);
+            ctx.lineTo(padding + courtWidth / 2 * scaleX, canvas.height - padding);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 中圈
+            ctx.beginPath();
+            ctx.arc(toCanvasX(14), toCanvasY(7.5), 1.8 * Math.min(scaleX, scaleY), 0, 2 * Math.PI);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 罰球區（左）
+            ctx.beginPath();
+            ctx.rect(toCanvasX(0), toCanvasY(11.25), 5.8 * scaleX, 7.5 * scaleY);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 罰球區（右）
+            ctx.beginPath();
+            ctx.rect(toCanvasX(22.2), toCanvasY(11.25), 5.8 * scaleX, 7.5 * scaleY);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 三分線（左）
+            ctx.beginPath();
+            ctx.arc(toCanvasX(0), toCanvasY(7.5), 6.75 * scaleX, -Math.PI/2.5, Math.PI/2.5);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 三分線（右）
+            ctx.beginPath();
+            ctx.arc(toCanvasX(28), toCanvasY(7.5), 6.75 * scaleX, Math.PI - Math.PI/2.5, Math.PI + Math.PI/2.5);
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // 籃框（左）
+            ctx.beginPath();
+            ctx.arc(toCanvasX(1.2), toCanvasY(7.5), 0.23 * Math.min(scaleX, scaleY), 0, 2 * Math.PI);
+            ctx.strokeStyle = '#ff6b35';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // 籃框（右）
+            ctx.beginPath();
+            ctx.arc(toCanvasX(26.8), toCanvasY(7.5), 0.23 * Math.min(scaleX, scaleY), 0, 2 * Math.PI);
+            ctx.strokeStyle = '#ff6b35';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+            
+            // 籃板（左）
+            ctx.beginPath();
+            ctx.moveTo(toCanvasX(0.9), toCanvasY(11));
+            ctx.lineTo(toCanvasX(0.9), toCanvasY(4));
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+            
+            // 籃板（右）
+            ctx.beginPath();
+            ctx.moveTo(toCanvasX(27.1), toCanvasY(11));
+            ctx.lineTo(toCanvasX(27.1), toCanvasY(4));
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+        }
+        
+        // 繪製球場
+        function drawCourt() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 背景
+            ctx.fillStyle = '#f0f4f8';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 繪製籃球場
+            drawBasketballCourt();
+            
+            // 座標軸標籤
+            ctx.fillStyle = '#333';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            
+            // x 軸標籤
+            for (let x = 0; x <= courtWidth; x += 4) {
+                ctx.fillText(x.toString(), toCanvasX(x), canvas.height - padding + 20);
+            }
+            ctx.fillText('x (米)', canvas.width / 2, canvas.height - 5);
+            
+            // y 軸標籤
+            ctx.textAlign = 'right';
+            for (let y = 0; y <= courtHeight; y += 2) {
+                ctx.fillText(y.toString(), padding - 8, toCanvasY(y) + 4);
+            }
+            ctx.save();
+            ctx.translate(12, canvas.height / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.textAlign = 'center';
+            ctx.fillText('y (米)', 0, 0);
+            ctx.restore();
+            
+            // 繪製最佳位置（如果顯示）
+            if (showOptimalPos) {
+                const opt = optimalPositions[showOptimalPos];
+                
+                // 發光效果
+                ctx.beginPath();
+                ctx.arc(toCanvasX(opt.x), toCanvasY(opt.y), 20, 0, 2 * Math.PI);
+                ctx.fillStyle = 'rgba(39, 174, 96, 0.2)';
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(toCanvasX(opt.x), toCanvasY(opt.y), 12, 0, 2 * Math.PI);
+                ctx.fillStyle = 'rgba(39, 174, 96, 0.3)';
+                ctx.fill();
+                
+                ctx.beginPath();
+                ctx.arc(toCanvasX(opt.x), toCanvasY(opt.y), 8, 0, 2 * Math.PI);
+                ctx.fillStyle = '#27ae60';
+                ctx.fill();
+                ctx.strokeStyle = '#1e8449';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 標籤
+                ctx.fillStyle = '#27ae60';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText('★ 最佳位置', toCanvasX(opt.x) + 15, toCanvasY(opt.y) - 5);
+            }
+            
+            // 繪製連線
+            ctx.strokeStyle = 'rgba(52, 152, 219, 0.3)';
+            ctx.lineWidth = 1;
+            booths.forEach(booth => {
+                ctx.beginPath();
+                ctx.moveTo(toCanvasX(currentP.x), toCanvasY(currentP.y));
+                ctx.lineTo(toCanvasX(booth.x), toCanvasY(booth.y));
+                ctx.stroke();
+            });
+            
+            // 繪製攤位
+            booths.forEach(booth => {
+                // 陰影
+                ctx.beginPath();
+                ctx.arc(toCanvasX(booth.x) + 2, toCanvasY(booth.y) + 2, 10, 0, 2 * Math.PI);
+                ctx.fillStyle = 'rgba(0,0,0,0.2)';
+                ctx.fill();
+                
+                // 攤位圓點
+                ctx.beginPath();
+                ctx.arc(toCanvasX(booth.x), toCanvasY(booth.y), 10, 0, 2 * Math.PI);
+                ctx.fillStyle = '#e74c3c';
+                ctx.fill();
+                ctx.strokeStyle = '#c0392b';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // 標籤
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(booth.name, toCanvasX(booth.x), toCanvasY(booth.y) + 4);
+            });
+            
+            // 繪製兌換處 P
+            // 陰影
+            ctx.beginPath();
+            ctx.arc(toCanvasX(currentP.x) + 2, toCanvasY(currentP.y) + 2, 12, 0, 2 * Math.PI);
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.fill();
+            
+            ctx.beginPath();
+            ctx.arc(toCanvasX(currentP.x), toCanvasY(currentP.y), 12, 0, 2 * Math.PI);
+            ctx.fillStyle = '#3498db';
+            ctx.fill();
+            ctx.strokeStyle = '#2980b9';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // P 標籤
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('P', toCanvasX(currentP.x), toCanvasY(currentP.y) + 4);
+        }
+        
+        // 更新距離顯示
+        function updateDistances() {
+            let totalDist = 0;
+            let maxDist = 0;
+            let maxBooth = '';
+            
+            booths.forEach(booth => {
+                const dist = distance(currentP, booth);
+                totalDist += dist;
+                if (dist > maxDist) {
+                    maxDist = dist;
+                    maxBooth = booth.name;
+                }
+                document.getElementById('dist' + booth.name).textContent = dist.toFixed(2) + ' m';
+            });
+            
+            document.getElementById('positionP').textContent = `(${currentP.x.toFixed(1)}, ${currentP.y.toFixed(1)})`;
+            document.getElementById('totalDist').textContent = totalDist.toFixed(2) + ' m';
+            document.getElementById('maxDist').textContent = maxDist.toFixed(2) + ' m';
+            
+            // 挑戰模式檢查
+            if (challengeMode) {
+                if (totalDist <= targetTotalDist + 0.5) {
+                    document.getElementById('challengeText').innerHTML = '🎉 <strong>恭喜！你找到了很好的位置！</strong>';
+                    document.getElementById('challengeText').style.color = '#27ae60';
+                }
+            }
+        }
+        
+        // 顯示最佳位置
+        function showOptimal(model) {
+            showOptimalPos = 'model' + model;
+            const opt = optimalPositions[showOptimalPos];
+            
+            // 顯示最佳位置資訊
+            document.getElementById('optimalInfo').classList.add('show');
+            document.getElementById('optimalCoord').textContent = `(${opt.x}, ${opt.y})`;
+            document.getElementById('optimalDist').innerHTML = `總距離：${opt.totalDist} m | 最遠距離：${opt.maxDist} m`;
+            
+            drawCourt();
+            
+            // 更新按鈕狀態
+            document.querySelectorAll('.model-btn').forEach((btn, index) => {
+                btn.classList.toggle('active', index === model - 1);
+            });
+        }
+        
+        // 隱藏最佳位置
+        function hideOptimal() {
+            showOptimalPos = null;
+            document.getElementById('optimalInfo').classList.remove('show');
+            drawCourt();
+            document.querySelectorAll('.model-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+        }
+        
+        // 自動動畫
+        function toggleAnimation() {
+            if (animationRunning) {
+                stopAnimation();
+            } else {
+                startAnimation();
+            }
+        }
+        
+        function startAnimation() {
+            animationRunning = true;
+            document.getElementById('animBtn').textContent = '⏸ 停止自動移動';
+            animationAngle = 0;
+            animateP();
+        }
+        
+        function stopAnimation() {
+            animationRunning = false;
+            document.getElementById('animBtn').textContent = '▶ 開始自動移動';
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+        }
+        
+        function animateP() {
+            if (!animationRunning) return;
+            
+            const speed = document.getElementById('speedSlider').value / 50;
+            animationAngle += speed;
+            
+            // 沿著 x=14 線上下移動
+            const y = 7.5 + 7 * Math.sin(animationAngle * 0.5);
+            
+            currentP.x = 14;
+            currentP.y = y;
+            
+            drawCourt();
+            updateDistances();
+            
+            animationId = requestAnimationFrame(animateP);
+        }
+        
+        // 開始挑戰
+        function startChallenge() {
+            challengeMode = true;
+            currentP = { x: 14, y: 7 };
+            showOptimalPos = null;
+            stopAnimation();
+            document.getElementById('challengeText').innerHTML = '挑戰：找出總距離 <strong>少於 40.5 m</strong> 的位置！';
+            document.getElementById('challengeText').style.color = '#667eea';
+            drawCourt();
+            updateDistances();
+        }
+        
+        // 點擊事件
+        canvas.addEventListener('click', function(e) {
+            if (animationRunning) stopAnimation();
+            
+            const rect = canvas.getBoundingClientRect();
+            const canvasX = e.clientX - rect.left;
+            const canvasY = e.clientY - rect.top;
+            
+            const x = toCourtX(canvasX);
+            const y = toCourtY(canvasY);
+            
+            // 檢查是否在球場範圍內
+            if (x >= 0 && x <= courtWidth && y >= 0 && y <= courtHeight) {
+                currentP.x = x;
+                currentP.y = y;
+                drawCourt();
+                updateDistances();
+            }
+        });
+        
+        // 拖動功能
+        let isDragging = false;
+        
+        canvas.addEventListener('mousedown', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const canvasX = e.clientX - rect.left;
+            const canvasY = e.clientY - rect.top;
+            
+            // 檢查是否點擊在 P 附近
+            const distToP = Math.sqrt(
+                Math.pow(canvasX - toCanvasX(currentP.x), 2) +
+                Math.pow(canvasY - toCanvasY(currentP.y), 2)
+            );
+            
+            if (distToP < 20) {
+                isDragging = true;
+                if (animationRunning) stopAnimation();
+            }
+        });
+        
+        canvas.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                const rect = canvas.getBoundingClientRect();
+                const canvasX = e.clientX - rect.left;
+                const canvasY = e.clientY - rect.top;
+                
+                let x = toCourtX(canvasX);
+                let y = toCourtY(canvasY);
+                
+                // 限制在球場範圍內
+                x = Math.max(0, Math.min(courtWidth, x));
+                y = Math.max(0, Math.min(courtHeight, y));
+                
+                currentP.x = x;
+                currentP.y = y;
+                drawCourt();
+                updateDistances();
+            }
+        });
+        
+        canvas.addEventListener('mouseup', function() {
+            isDragging = false;
+        });
+        
+        canvas.addEventListener('mouseleave', function() {
+            isDragging = false;
+        });
+        
+        // 初始繪製
+        drawCourt();
+        updateDistances();
+    </script>
+</body>
+</html>
